@@ -37,9 +37,9 @@
 
 ## [Synchronizers](/synchronizers.html)
 * [`!`](/api/missionary.core/!.html)
-* [`?`](/api/missionary.core/%3F.html)
-* [`?<`](/api/missionary.core/%3F%3C.html)
-* [`?>`](/api/missionary.core/%3F%3E.html)
+* [`?`](/api/missionary.core/_.html)
+* [`?<`](/api/missionary.core/_<.html)
+* [`?>`](/api/missionary.core/_>.html)
 
 ## [Ports](/ports.html)
 * [`dfv`](/api/missionary.core/dfv.html)

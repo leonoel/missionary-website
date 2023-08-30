@@ -10,9 +10,9 @@
  "ports"                          {:template :topic}
 
  "api/missionary.core/!"          {:template :topic}
- "api/missionary.core/?"          {:template :topic}
- "api/missionary.core/?<"         {:template :topic}
- "api/missionary.core/?>"         {:template :topic}
+ "api/missionary.core/_"          {:template :topic}
+ "api/missionary.core/_<"         {:template :topic}
+ "api/missionary.core/_>"         {:template :topic}
  "api/missionary.core/absolve"    {:template :topic}
  "api/missionary.core/amb"        {:template :topic}
  "api/missionary.core/amb="       {:template :topic}
