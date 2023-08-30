@@ -1,6 +1,6 @@
 # About
 
-[Source](https://github.com/leonoel/missionary-site)
+[Source](https://github.com/leonoel/missionary-website)
 
 TODO legal
 
