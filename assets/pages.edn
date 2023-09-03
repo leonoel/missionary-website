@@ -8,6 +8,7 @@
  "publishers"                     {:template :topic}
  "synchronizers"                  {:template :topic}
  "ports"                          {:template :topic}
+ "continuous-time"                {:template :topic}
 
  "api/missionary.core/!"          {:template :topic}
  "api/missionary.core/_"          {:template :topic}
