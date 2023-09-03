@@ -60,7 +60,7 @@ Example : compute how many times the user clicked on the browser window.
   (m/observe
     (fn [!]
       (.addEventListener js/window "click" !)
-      (.removeEventListener js/window "click" !))))
+      #(.removeEventListener js/window "click" !))))
 
 ;; continuous
 (def click-count
