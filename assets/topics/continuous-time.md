@@ -129,7 +129,7 @@ On the other hand, running effects in the discrete part of the pipeline is perfe
 Example : use [`reduce`](/api/missionary.core/reduce.html) to print successive states of a continuous flow. The state
 will be sampled as fast as possible, i.e. for each successive change.
 ```clojure
-(m/reduce (fn [_ x] (println "clicked" x "times")) click-count)
+(m/reduce (fn [_ x] (println "clicked" x "times")) nil click-count)
 ```
 
 ### Controlled sampling
