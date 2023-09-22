@@ -25,18 +25,21 @@
   (slurp (io/file root path)))
 
 (defn write-css! [release assets]
-  (let [c (edn/read-string (read! assets "glow.edn"))]
+  (let [{:keys [glow code-font-size pre-padding]} (edn/read-string (read! assets "style.edn"))]
     (write! release "clojure.css"
       (garden/css
+        [:code {:font-size code-font-size}]
         [:pre
-         (select-keys c [:background])
-         (into [] (map g.html/css-color c))]))))
+         (assoc (select-keys glow [:background])
+           :overflow-x "auto"
+           :padding pre-padding)
+         (into [] (map g.html/css-color glow))]))))
 
 (def hiccup-renderers
   (assoc md.transform/default-hiccup-renderers
     :code (fn [_ctx {:keys [language content]}]
             (assert (= language "clojure") "Unsupported language.")
-            (into [:pre] (map (comp g.html/hiccup-transform g.parse/parse :text)) content))
+            [:pre (into [:code] (map (comp g.html/hiccup-transform g.parse/parse :text)) content)])
     :plain (fn [ctx node]
              (or (:text node)
                (keep (partial md.transform/->hiccup
