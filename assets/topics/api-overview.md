@@ -40,17 +40,15 @@
 * [`?`](/api/missionary.core/_.html)
 * [`?<`](/api/missionary.core/_<.html)
 * [`?>`](/api/missionary.core/_>.html)
+* [`amb`](/api/missionary.core/amb.html)
+* [`amb=`](/api/missionary.core/amb%3D.html)
+* [`holding`](/api/missionary.core/holding.html)
 
 ## [Ports](/ports.html)
 * [`dfv`](/api/missionary.core/dfv.html)
 * [`mbx`](/api/missionary.core/mbx.html)
 * [`rdv`](/api/missionary.core/rdv.html)
 * [`sem`](/api/missionary.core/sem.html)
-
-## Helpers
-* [`amb`](/api/missionary.core/amb.html)
-* [`amb=`](/api/missionary.core/amb%3D.html)
-* [`holding`](/api/missionary.core/holding.html)
 
 ## Executors
 * [`cpu`](/api/missionary.core/cpu.html)
