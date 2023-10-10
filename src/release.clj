@@ -1,9 +1,11 @@
 (ns release
-  (:require [clojure.edn :as edn]
+  (:require [cljs.build.api :as cljs]
+            [clojure.edn :as edn]
             [clojure.java.io :as io]
             [garden.core :as garden]
             [glow.html :as g.html]
             [glow.parse :as g.parse]
+            [hiccup.util :as util]
             [hiccup2.core :as h]
             [hiccup.page :as h.page]
             [nextjournal.markdown :as md]
@@ -24,7 +26,17 @@
 (defn read! [root path]
   (slurp (io/file root path)))
 
-(defn write-css! [release assets]
+(defn write-js! [release {:keys [dev?]}]
+  (cljs/build
+    (merge
+      {:main          "client.main"
+       :output-to     (str (io/file release "app.js"))}
+      (if dev?
+        {:asset-path "/js"
+         :output-dir (str (io/file release "js"))}
+        {:optimizations :advanced}))))
+
+(defn write-css! [release {:keys [assets]}]
   (let [{:keys [glow code-font-size pre-padding]} (edn/read-string (read! assets "style.edn"))]
     (write! release "clojure.css"
       (garden/css
@@ -60,14 +72,25 @@
   (h/html (h.page/doctype :html5)
     (into [:html] hiccup)))
 
-(def clojure-css (h.page/include-css "clojure.css"))
+(defn page-head [dev?]
+  [:head
+   [:meta {:charset "utf-8"}]
+   [:link {:type "text/css"
+           :href (util/to-uri "/clojure.css")
+           :rel "stylesheet"}]
+   [:script {:type  "text/javascript"
+             :src   (util/to-uri "/app.js")
+             :async (not dev?)}]])
+
+(def search-input
+  [:input#search {:type "search"}])
 
 (def template
-  {:home      (fn [assets path page]
+  {:home      (fn [{:keys [assets dev?]}]
                 (html5
-                  [:head clojure-css]
+                  (page-head dev?)
                   [:body
-                   [:header [:a {:href "/about.html"} "About"]]
+                   [:header [:a {:href "/about.html"} "About"] search-input]
                    [:h1 "Missionary"]
                    [:section (md->hiccup assets "fragments/one-sentence")]
                    [:section (md->hiccup assets "fragments/one-code-block")]
@@ -76,30 +99,35 @@
                    [:section (md->hiccup assets "fragments/source")]
                    [:section (md->hiccup assets "fragments/support")]
                    [:section (md->hiccup assets "fragments/quote")]]))
-   :not-found (fn [assets path page]
+   :not-found (fn [{}]
                 (html5
                   [:head]
                   [:body
                    [:h1 "Not found"]]))
-   :topic     (fn [assets path page]
+   :topic     (fn [{:keys [assets path dev?]}]
                 (html5
-                  [:head clojure-css]
+                  (page-head dev?)
                   [:body
-                   [:header [:a {:href "/"} "Home"]]
-                   (md->hiccup assets (str "topics/" path))
+                   [:header [:a {:href "/"} "Home"] search-input]
+                   [:article
+                    (md->hiccup assets (str "topics/" path))]
                    [:footer (md->hiccup assets "fragments/footer")]]))})
 
-(defn write-pages! [release assets]
+(defn read-pages! [assets]
+  (edn/read-string (read! assets "pages.edn")))
+
+(defn write-pages! [release opts]
   (reduce-kv (fn [_ path page]
                (write! release (str path ".html")
-                 ((template (:template page)) assets path page)))
-    nil (edn/read-string (read! assets "pages.edn"))))
+                 ((template (:template page)) (assoc opts :path path :page page))))
+    nil (read-pages! (:assets opts))))
 
-(defn build [release assets]
+(defn build [release opts]
   (doto release
     (clean!)
-    (write-css! assets)
-    (write-pages! assets)))
+    (write-js! opts)
+    (write-css! opts)
+    (write-pages! opts)))
 
 (defn -main [& _]
-  (build (io/file "release") (io/file "assets")))
+  (build (io/file "release") {:assets (io/file "assets")}))
