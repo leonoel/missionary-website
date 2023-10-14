@@ -95,7 +95,7 @@ Example : internal resource allocation & cleanup, with interruption polling in a
       (let [c (m/? (m/via m/blk (.read is)))]               ;; read file asynchronously
         (when-not (== c -1)
           (print (char c))
-          (m/!)                                            ;; check interruption state
+          (m/!)                                             ;; check interruption state
           (recur))))))
 ```
 
