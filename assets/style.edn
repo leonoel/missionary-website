@@ -8,6 +8,7 @@
  :footer-font-size "1.5rem"
  :text-color       "#FFF"
  :link-color       "#F2994A"
+ :highlight-color  "#4C5729CC"
  :code-background  "#2D6063CC"
  :body-background  "#040A0C"
  :body-gradients   [{:size ["50%" "50%"], :position ["65%" "55%"], :color "#054246FF"}

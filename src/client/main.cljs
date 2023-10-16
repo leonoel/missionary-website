@@ -5,31 +5,26 @@
             [clojure.string :as str]
             [hyperfiddle.incseq :as i]
             [missionary.core :as m]
-            [goog.style :as s])
+            [goog.dom.classlist :as gdc])
   (:import (goog.dom TagName NodeType)
            (goog.events EventType))
   (:require-macros [client.main :refer [topics]]))
 
-(defn get-article [path info]
-  (m/sp (assoc info :article (-> (str "/" path ".html")
-                               (n/fetch "document")
-                               (m/?)
-                               (.getElementsByTagName "article")
-                               (.item 0)))))
-
-(defn join-map [m]
-  (apply m/join (fn [& xs] (zipmap (keys m) xs)) (vals m)))
-
-(defn map-vals [f m]
-  (reduce-kv (fn [m k v] (assoc m k (f k v))) {} m))
-
 (def get-articles
-  (->> (topics)
-    (map-vals get-article)
-    (join-map)
-    (m/memo)))
+  (let [t (topics)
+        hrefs (mapv (fn [path] (str "/" path ".html")) (keys t))]
+    (->> (vals t)
+      (map (fn [href page]
+             (m/sp (-> href
+                     (n/fetch "document")
+                     (m/?)
+                     (.getElementsByTagName "article")
+                     (.item 0)
+                     (->> (assoc page :article))))) hrefs)
+      (apply m/join (fn [& pages] (zipmap hrefs pages)))
+      (m/memo))))
 
-(defn score [[path {:keys [article]}] <needle]
+(defn score [[href {:keys [article]}] <needle]
   (let [title (.item (.getElementsByTagName article "h1") 0)
         title-child (.item (.-childNodes title) 0)
         suggestion (d/element "div")
@@ -37,26 +32,31 @@
         before-highlight (d/text "")
         inside-highlight (d/text "")
         after-highlight (d/text "")]
-    (s/setStyle highlight "background" "yellow")
+    (gdc/add highlight "highlight")
+    (gdc/add suggestion "suggestion")
+    (set! (.-onclick suggestion)
+      #(set! (.-href (.-location js/window)) href))
     (.appendChild highlight inside-highlight)
     (.appendChild suggestion title-child)
     [suggestion
      (if-some [reference (when (and (= (.-nodeType title-child) (.-ELEMENT NodeType))
                                  (= (.-CODE TagName) (.-tagName title-child)))
                            (d/get-text! (.item (.-childNodes title-child) 0)))]
-       (let [exact (name (symbol reference))]
+       (let [offset (inc (or (str/index-of reference "/") (.lastIndexOf reference ".")))
+             suffix (subs (str/lower-case reference) offset)]
          (.replaceChildren title-child)
          (.appendChild title-child before-highlight)
          (.appendChild title-child highlight)
          (.appendChild title-child after-highlight)
          (m/latest
            (fn [needle]
-             (if-some [start (when-not (= "" needle) (str/index-of reference needle))]
-               (let [end (+ start (count needle))]
+             (if-some [index (when-not (= "" needle) (str/index-of suffix needle))]
+               (let [start (+ offset index)
+                     end (+ start (count needle))]
                  (d/set-text! before-highlight (subs reference 0 start))
                  (d/set-text! inside-highlight (subs reference start end))
                  (d/set-text! after-highlight (subs reference end))
-                 (if (= exact needle) 2 1))
+                 (if (= suffix needle) 3 (if (zero? index) 2 1)))
                (do (d/set-text! before-highlight "")
                    (d/set-text! inside-highlight "")
                    (d/set-text! after-highlight reference)
@@ -71,6 +71,7 @@
                   (m/relieve {})
                   (m/sample (fn [_] (str/lower-case (.-value input)))))
         div->score (into {} (map (fn [e] (score e <needle))) path->page)]
+    (gdc/add container "autocomplete")
     (.appendChild (.-parentNode input) container)
     (->> (vals div->score)
       (apply m/latest

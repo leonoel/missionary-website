@@ -51,7 +51,7 @@
   (let [{:keys [text-color max-width text-font-family code-font-family
                 body-background body-gradients link-color headings code-background pre-padding
                 code-special code-literal code-comment code-string code-symbol
-                footer-font-size block-margin]}
+                footer-font-size block-margin highlight-color]}
         (edn/read-string (read! assets "style.edn"))]
     (spit (touch! release style)
       (garden/css
@@ -79,6 +79,9 @@
          {:width "100%"
           :max-width max-width
           :margin 'auto}]
+        [:div.autocomplete {:position 'absolute}]
+        [:div.suggestion {:cursor 'pointer}]
+        [:span.highlight {:background-color highlight-color}]
         [:body {:color                 text-color
                 :hyphens               'auto
                 :text-align            'justify
