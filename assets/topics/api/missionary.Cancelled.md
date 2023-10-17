@@ -1,6 +1,6 @@
 # `missionary.Cancelled`
 
-Usage :
+## Usage
 * `(import 'missionary.Cancelled)`
 * `(try ,,, (catch Cancelled e ,,,))`
 * `(Cancelled. "Operation interrupted.")`
@@ -49,3 +49,20 @@ Example :
 (m/? (m/timeout my-sleep 500 :timeout))    ;; :sleep-cancelled
 := :timeout
 ```
+
+## See also
+* [`sleep`](/api/missionary.core/sleep.html)
+* [`seed`](/api/missionary.core/seed.html)
+* [`group-by`](/api/missionary.core/group-by.html)
+* [`never`](/api/missionary.core/never.html)
+* [`observe`](/api/missionary.core/observe.html)
+* [`watch`](/api/missionary.core/watch.html)
+* [`subscribe`](/api/missionary.core/subscribe.html)
+* [`memo`](/api/missionary.core/memo.html)
+* [`stream`](/api/missionary.core/stream.html)
+* [`signal`](/api/missionary.core/signal.html)
+* [`dfv`](/api/missionary.core/dfv.html)
+* [`mbx`](/api/missionary.core/mbx.html)
+* [`rdv`](/api/missionary.core/rdv.html)
+* [`sem`](/api/missionary.core/sem.html)
+* [`!`](/api/missionary.core/!.html)
