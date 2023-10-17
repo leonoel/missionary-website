@@ -23,4 +23,4 @@ Example : ensure a task terminates within 500ms
 * `task` termination is synchronous with `timeout` termination
 
 ## See also
-* [`sleep`](/api/missionary.core/timeout.html)
+* [`sleep`](/api/missionary.core/sleep.html)
