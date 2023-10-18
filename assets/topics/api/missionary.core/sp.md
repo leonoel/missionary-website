@@ -44,8 +44,6 @@ Example : recover from a task failure.
 
 ## Synchronicity
 * `sp` completion is synchronous with final `body` expression return
-* any child task spawn is synchronous with its parking expression call
-* any parking expression return is synchronous with its task completion
 * any `body` expression evaluation is synchronous with the return of the parking expression preceding it in program
 order, if it exists. Otherwise, it is synchronous with `sp` spawn.
 
