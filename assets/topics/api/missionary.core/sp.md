@@ -7,10 +7,46 @@ A macro [operator](/operators.html) returning a task evaluating `body`, in an im
 asynchronous parking and interruption checking. `sp` process completes with the evaluation result, or crashes if an
 exception is thrown. Cancelling `sp` process interrupts the evaluation context.
 
+Example : a task performing a synchronous effect.
+```clojure
+(require '[missionary.core :as m])
+
+(def prn-foo (m/sp (prn :foo)))
+
+(m/? prn-foo)   ;; :foo
+:= nil
+```
+
+Example : transform the result of task.
+```clojure
+(require '[missionary.core :as m])
+
+(defn map-name [task]
+  (m/sp (name (m/? task))))
+
+(m/? (map-name (m/sleep 1000 :foo)))
+:= "foo"
+```
+
+Example : recover from a task failure.
+```clojure
+(require '[missionary.core :as m])
+(import 'java.io.IOException)
+
+(defn recover-io [task]
+  (m/sp (try (m/? task)
+             (catch IOException _
+               :io-failure))))
+
+(m/? (recover-io (m/via m/blk (slurp "https://clojur.org"))))
+:= :io-failure
+```
+
 ## Synchronicity
-* `sp` completion is synchronous with evaluation of final `body` expression
-* any parking task spawn is synchronous with evaluation of its parking expression
-* evaluation of any `body` expression is synchronous with the completion of the parking task preceding it in program
+* `sp` completion is synchronous with final `body` expression return
+* any child task spawn is synchronous with its parking expression call
+* any parking expression return is synchronous with its task completion
+* any `body` expression evaluation is synchronous with the return of the parking expression preceding it in program
 order, if it exists. Otherwise, it is synchronous with `sp` spawn.
 
 ## See also
