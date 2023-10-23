@@ -1,20 +1,11 @@
-{:headings         [{:dimming 0.5, :margin "1rem", :font-size "1.5rem"}
-                    {:dimming 0.3, :margin "1rem", :font-size "1.3rem"}]
- :text-font-family "'Lexend', sans-serif"
- :code-font-family "'Source Code Pro', monospace"
- :max-width        "60rem"
- :block-margin     "0.7rem"
- :pre-padding      "0.5rem"
- :footer-font-size "1.5rem"
- :text-color       "#FFF"
- :link-color       "#F2994A"
+{:max-width        "980px"
+ :header-font-size "1.2rem"
+ :footer-font-size "1.2rem"
+ :text-color       "#1F2328"
+ :link-color       "#0969da"
  :highlight-color  "#4C5729CC"
- :code-background  "#2D6063CC"
- :body-background  "#040A0C"
- :body-gradients   [{:size ["50%" "50%"], :position ["65%" "55%"], :color "#054246FF"}
-                    {:size ["30%" "30%"], :position ["40%" "40%"], :color "#F148674D"}]
- :code-special     "#ff7b72"
- :code-literal     "#79c0ff"
- :code-comment     "#8b949e"
- :code-string      "#a5d6ff"
- :code-symbol      "#e6edf3"}
+ :code-special     "#cf222e"
+ :code-literal     "#0550ae"
+ :code-comment     "#6e7781"
+ :code-string      "#0a3069"
+ :code-symbol      "#1F2328"}

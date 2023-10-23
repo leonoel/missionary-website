@@ -1,1 +1,0 @@
-Missionary is a reactive dataflow programming toolkit providing referentially transparent operators for lazy continuous signals, eager discrete streams, and IO actions.

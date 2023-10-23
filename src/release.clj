@@ -2,7 +2,6 @@
   (:require [cljs.build.api :as cljs]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.string :as str]
             [garden.core :as garden]
             [glow.html :as g.html]
             [glow.parse :as g.parse]
@@ -11,8 +10,7 @@
             [hiccup.page :as h.page]
             [nextjournal.markdown :as md]
             [nextjournal.markdown.transform :as md.transform]
-            [nextjournal.markdown.parser :as md.parser]
-            [thi.ng.color.core :as c])
+            [nextjournal.markdown.parser :as md.parser])
   (:import (java.io File)))
 
 (defn clean! [^File f]
@@ -29,6 +27,7 @@
 
 (def app "app.js")
 (def style "style.css")
+(def github-markdown "github-markdown.css")
 
 (defn write-js! [release {:keys [dev?]}]
   (cljs/build
@@ -40,18 +39,11 @@
          :output-dir (str (io/file release "js"))}
         {:optimizations :advanced}))))
 
-(defn gradient [{[w h] :size [x y] :position color :color}]
-  (str "radial-gradient(ellipse " w " " h " at " x " " y ", " color ", transparent)"))
-
-(defn scale-alpha [color s]
-  (let [c (c/css color)]
-    @(c/as-css (c/rgba (c/red c) (c/green c) (c/blue c) (* s (c/alpha c))))))
-
 (defn write-css! [release {:keys [assets]}]
-  (let [{:keys [text-color max-width text-font-family code-font-family
-                body-background body-gradients link-color headings code-background pre-padding
-                code-special code-literal code-comment code-string code-symbol
-                footer-font-size block-margin highlight-color]}
+  (spit (touch! release github-markdown)
+    (slurp "https://raw.githubusercontent.com/sindresorhus/github-markdown-css/gh-pages/github-markdown.css"))
+  (let [{:keys [max-width header-font-size footer-font-size text-color link-color
+                highlight-color code-special code-literal code-comment code-string code-symbol]}
         (edn/read-string (read! assets "style.edn"))]
     (spit (touch! release style)
       (garden/css
@@ -67,7 +59,6 @@
           :font 'inherit}]
         [:article :aside :details :figcaption :figure :footer :header :hgroup :menu :nav :section
          {:display 'block}]
-        [:ol :ul {:list-style 'none}]
         [:blockquote :q {:quotes 'none}
          [:&:before :&:after {:content "''"}]
          [:&:before :&:after {:content 'none}]]
@@ -75,52 +66,36 @@
                  :border-spacing 0}]
 
         [:html :body {:height "100%"}]
-        [:header :article :footer
+        [:header :footer
          {:width "100%"
           :max-width max-width
-          :margin 'auto}]
+          :margin 'auto}
+         [:hr {:margin-bottom 0}]
+         [:a {:color link-color
+              :font-weight 600
+              :text-decoration 'none}
+          [:&:hover {:text-decoration 'underline}]]]
+        [:header {:font-size header-font-size}]
         [:div.autocomplete {:position 'absolute}]
         [:div.suggestion {:cursor 'pointer}]
         [:span.highlight {:background-color highlight-color}]
-        [:body {:color                 text-color
-                :hyphens               'auto
-                :text-align            'justify
-                :font-family           text-font-family
-                :display               'flex
-                :flex-flow             'column
-                :background-attachment 'fixed
-                :background-color      body-background
-                :background-image      (str/join "," (map gradient body-gradients))}]
+        [:body {:display   'flex
+                :flex-flow 'column}]
         [:main {:overflow 'auto
                 :flex      1
                 :display   'flex
                 :flex-flow 'column}]
-        [:article {:flex 1}
-         (into []
-           (map-indexed
-             (fn [i {:keys [margin dimming font-size]}]
-               [(keyword (str "h" (inc i)))
-                {:color (scale-alpha text-color dimming)
-                 :font-size font-size
-                 :margin (str margin " 0")}
-                [:a {:color (scale-alpha link-color dimming)}]]))
-           headings)
-         [:p :pre :ul :table {:margin (str block-margin " 0")}]
-         [:ul {:padding-left "1rem"}
-          [:li {:display 'list-item
-                :list-style-type 'disc}]]]
-        [:footer
+        [:article.markdown-body
+         {:flex 1
+          :box-sizing 'border-box
+          :width "100%"
+          :max-width max-width
+          :margin "10px auto"}]
+        [:footer {:font-size footer-font-size}
          [:ul {:display 'flex
-               :justify-content 'space-between}
-          [:li {:font-size footer-font-size}]]]
-        [:a {:color link-color
-             :text-decoration 'none}
-         [:&:hover {:text-decoration 'underline}]]
-        [:pre :code {:font-family code-font-family
-                     :background-color code-background}]
+               :list-style 'none
+               :justify-content 'space-between}]]
         [:pre
-         {:overflow-x 'auto
-          :padding pre-padding}
          [:.exception
           :.repeat
           :.conditional
@@ -175,9 +150,9 @@
   [:head
    [:meta {:charset "utf-8"}]
    [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
-   [:link {:rel "preconnect" :href "https://fonts.googleapis.com"}]
-   [:link {:rel "preconnect" :href "https://fonts.gstatic.com" :crossorigin "true"}]
-   [:link {:rel "stylesheet" :href "https://fonts.googleapis.com/css2?family=Lexend:wght@300&family=Source+Code+Pro&display=swap"}]
+   [:link {:type "text/css"
+           :href (util/to-uri (str "/" github-markdown))
+           :rel "stylesheet"}]
    [:link {:type "text/css"
            :href (util/to-uri (str "/" style))
            :rel "stylesheet"}]
@@ -193,16 +168,10 @@
                 (html5
                   (page-head dev?)
                   [:body
-                   [:header [:a {:href "/about.html"} "About"] search-input]
+                   [:header [:a {:href "/about.html"} "About"] search-input [:hr]]
                    [:main
-                    [:h1 "Missionary"]
-                    [:section (md->hiccup assets "fragments/one-sentence")]
-                    [:section (md->hiccup assets "fragments/one-code-block")]
-                    [:section (md->hiccup assets "fragments/one-paragraph")]
-                    [:section (md->hiccup assets "fragments/documentation")]
-                    [:section (md->hiccup assets "fragments/source")]
-                    [:section (md->hiccup assets "fragments/support")]
-                    [:section (md->hiccup assets "fragments/quote")]]]))
+                    [:article {:class "markdown-body"}
+                     (next (md->hiccup assets "topics/home"))]]]))
    :not-found (fn [{}]
                 (html5
                   [:head]
@@ -212,9 +181,9 @@
                 (html5
                   (page-head dev?)
                   [:body
-                   [:header [:a {:href "/"} "Home"] search-input]
+                   [:header [:a {:href "/"} "Home"] search-input [:hr]]
                    [:main
-                    [:article
+                    [:article {:class "markdown-body"}
                      (next (md->hiccup assets (str "topics/" path)))]
                     [:footer (md->hiccup assets "fragments/footer")]]]))})
 

@@ -1,3 +1,6 @@
+# Missionary
+Supervised dataflow programming for clojure and clojurescript.
+
 ```clojure
 (require '[missionary.core :as m])
 
@@ -17,3 +20,15 @@
 
 (dispose!)                                     ; cleanup, deregisters the atom watch
 ```
+
+For full-stack web developers who struggle to build correct and glitch-free applications, Missionary is a reactive programming toolkit based on process supervision, that lets you build massively concurrent, fine-grained reactive systems on both frontend and backend. Unlike promises and go-routines that make it easy to write a broken program, Missionary’s combinators provide the right set of constraints to let you build a fully composable program that is also correct and bug-free.
+
+[Quickstart](/quickstart.html)
+
+[Documentation](/documentation.html)
+
+[Source](https://github.com/leonoel/missionary)
+
+Support : clojurians slack #missionary
+
+> [Above all, I hope we don't become missionaries. - Alan J. Perlis](https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/full-text/book/book-Z-H-3.html)
