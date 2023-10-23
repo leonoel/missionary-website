@@ -42,7 +42,7 @@
 (defn write-css! [release {:keys [assets]}]
   (spit (touch! release github-markdown)
     (slurp "https://raw.githubusercontent.com/sindresorhus/github-markdown-css/gh-pages/github-markdown.css"))
-  (let [{:keys [max-width header-font-size footer-font-size text-color link-color
+  (let [{:keys [max-width padding header-font-size footer-font-size link-color
                 highlight-color code-special code-literal code-comment code-string code-symbol]}
         (edn/read-string (read! assets "style.edn"))]
     (spit (touch! release style)
@@ -69,13 +69,15 @@
         [:header :footer
          {:width "100%"
           :max-width max-width
-          :margin 'auto}
+          :margin 'auto
+          :box-sizing 'border-box}
          [:hr {:margin-bottom 0}]
          [:a {:color link-color
               :font-weight 600
               :text-decoration 'none}
           [:&:hover {:text-decoration 'underline}]]]
-        [:header {:font-size header-font-size}]
+        [:header {:font-size header-font-size
+                  :padding   (str padding " " padding " 0 " padding)}]
         [:div.autocomplete {:position 'absolute}]
         [:div.suggestion {:cursor 'pointer}]
         [:span.highlight {:background-color highlight-color}]
@@ -90,8 +92,11 @@
           :box-sizing 'border-box
           :width "100%"
           :max-width max-width
-          :margin "10px auto"}]
-        [:footer {:font-size footer-font-size}
+          :margin "0 auto"
+          :padding padding}]
+        [:footer {:font-size footer-font-size
+                  :padding   (str "0 " padding " " padding " " padding)}
+         [:hr {:margin-top 0}]
          [:ul {:display 'flex
                :list-style 'none
                :justify-content 'space-between}]]

@@ -1,4 +1,5 @@
 {:max-width        "980px"
+ :padding          "10px"
  :header-font-size "1.2rem"
  :footer-font-size "1.2rem"
  :text-color       "#1F2328"
