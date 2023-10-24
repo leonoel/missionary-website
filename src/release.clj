@@ -41,7 +41,7 @@
 
 (defn write-css! [release {:keys [assets]}]
   (spit (touch! release github-markdown)
-    (slurp "https://raw.githubusercontent.com/sindresorhus/github-markdown-css/gh-pages/github-markdown.css"))
+    (slurp "https://raw.githubusercontent.com/sindresorhus/github-markdown-css/gh-pages/github-markdown-light.css"))
   (let [{:keys [max-width padding header-font-size footer-font-size link-color
                 highlight-color code-special code-literal code-comment code-string code-symbol]}
         (edn/read-string (read! assets "style.edn"))]
