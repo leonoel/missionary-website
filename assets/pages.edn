@@ -3,6 +3,7 @@
 
  "about"                          {:template :topic}
  "documentation"                  {:template :topic}
+ "core-principles"                {:template :topic}
  "api-overview"                   {:template :topic}
  "operators"                      {:template :topic}
  "publishers"                     {:template :topic}

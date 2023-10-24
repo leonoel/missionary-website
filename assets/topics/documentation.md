@@ -8,5 +8,6 @@ missionary/missionary {:mvn/version "b.31"}
 ```
 
 ## Learning
-* [API overview](/api-overview.html)
+* [Core principles](/core-principles.html)
 * [Continuous time](/continuous-time.html)
+* [API overview](/api-overview.html)
