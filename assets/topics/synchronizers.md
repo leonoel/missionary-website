@@ -28,10 +28,10 @@ supports its own subset of synchronizers, according to this compatibility matrix
 
 |                                      | Single-threaded (JS) | Multi-threaded (JVM) | [`sp`](/api/missionary.core/sp.html) | [`cp`](/api/missionary.core/cp.html) | [`ap`](/api/missionary.core/ap.html) |
 |--------------------------------------|----------------------|----------------------|--------------------------------------|--------------------------------------|--------------------------------------|
-| [`!`](/api/missionary.core/!.html)   |                      | X                    | X                                    | X                                    | X                                    |
-| [`?`](/api/missionary.core/_.html)   |                      | X                    | X                                    |                                      | X                                    |
-| [`?<`](/api/missionary.core/_<.html) |                      |                      |                                      | X                                    | X                                    |
-| [`?>`](/api/missionary.core/_>.html) |                      |                      |                                      |                                      | X                                    |
+| [`!`](/api/missionary.core/!.html)   |                      | ✔️                    | ✔️                                    | ✔️                                    | ✔️                                    |
+| [`?`](/api/missionary.core/_.html)   |                      | ✔️                    | ✔️                                    |                                      | ✔️                                    |
+| [`?<`](/api/missionary.core/_<.html) |                      |                      |                                      | ✔️                                    | ✔️                                    |
+| [`?>`](/api/missionary.core/_>.html) |                      |                      |                                      |                                      | ✔️                                    |
 
 ## Coroutines
 The association of a coroutine context with its subset of synchronizers defines an extension of the clojure syntax. The
@@ -42,12 +42,16 @@ extensions is to augment the evaluation rules with extra capabilities.
 Missionary coroutines are *stackless* : synchronizers within nested function calls are not considered part of the
 coroutine execution context.
 
-Example : calling `?` from `sp` via a nested function call. Don't do this.
+Example : calling [`?`](/api/missionary.core/_.html) from [`sp`](/api/missionary.core/sp.html) via a nested function
+call. Don't do this.
 ```clojure
+(require '[missionary.core :as m])
+
 (defn my-sleep [d]
   (m/? (m/sleep d)))
 
-(m/sp (my-sleep 1000))              ;; undefined behavior, m/? is called from a nested function
+;; undefined behavior, m/? is called from a nested function
+(m/sp (my-sleep 1000))
 ```
 
 The common workarounds to this limitation are :
@@ -60,18 +64,70 @@ passed as argument is run. Evaluation is resumed when the task process terminate
 synchronizer call.
 
 [`?<`](/api/missionary.core/_<.html) and [`?>`](/api/missionary.core/_>.html) are the forking synchronizers. Forking is
-a generalization of parking, the evaluation is also suspended, but it can resume multiple times. The synchronizer takes
-a flow instead of task and returns a result for each transfer.
+a generalization of parking, the evaluation is also suspended, but it can resume many times. The synchronizer takes a
+flow instead of task and returns a result for each transfer. These two operators have different behavior when a new
+input is available - the former invalidates the current evaluation, the latter propagates backpressure.
 
-Example : a fixed-rate clock emitting `nil` every second.
+Example : backpressure propagation with [`?>`](/api/missionary.core/_>.html) and [`?`](/api/missionary.core/_.html).
 ```clojure
+(require '[missionary.core :as m])
+
 (defn now []
   #?(:clj (System/currentTimeMillis)
      :cljs (.now js/Date)))
 
-(m/ap
-  (let [target (m/?> (m/seed (iterate #(+ % 1000) (now))))]    ;; fork on an infinite sequence of timestamps
-    (m/? (m/sleep (- target (now))))))                         ;; park on a sleep for each timestamp
+;; a fixed-rate clock emitting `nil` every second
+(def clock
+  (m/ap
+    ;; fork on an infinite sequence of timestamps.
+    ;; ?> propagates backpressure : the next iteration is
+    ;; not consumed until the current sleep is completed
+    (let [timestamp (m/?> (m/seed (iterate (fn [previous] (+ previous 1000)) (now))))]
+      ;; park on a sleep for each timestamp
+      (m/? (m/sleep (- timestamp (now)))))))
+
+(def ps
+  ((m/reduce (fn [_ _] (prn :tick)) nil clock)
+   (partial prn :success)
+   (partial prn :failure)))
+;; after 1s
+:tick
+;; after 1s
+:tick
+;; after 1s
+:tick
+;; cancellation
+(ps)
+:failure #error{,,,}
+```
+
+Example : switch from indefinite evaluations with [`?<`](/api/missionary.core/_<.html).
+```clojure
+(require '[missionary.core :as m])
+
+(def !active (atom true))
+(def !result (atom 0))
+
+(def active-result
+  (m/cp
+    ;; fork on successive !active states.
+    ;; ?< invalidates current evaluation
+    (when (m/?< (m/watch !active))
+      ;; fork again to get successive !result states.
+      (m/?< (m/watch !result)))))
+
+(def ps
+  ((m/reduce (fn [_ x] (prn :> x)) nil active-result)
+   (partial prn :success)
+   (partial prn :failure)))
+:> 0
+(swap! !result inc)
+:> 1
+(swap! !active not)
+:> nil
+;; cancellation
+(ps)
+:failure #error{,,,}
 ```
 
 ## Interruption
@@ -88,19 +144,34 @@ changed by the coroutine body.
 
 Example : internal resource allocation & cleanup, with interruption polling in a loop.
 ```clojure
+(require '[missionary.core :as m])
 (require '[clojure.java.io :as io])
-(m/sp
-  (with-open [is (io/input-stream "myfile.txt")]            ;; open a file and close it before completing
-    (loop []
-      (let [c (m/? (m/via m/blk (.read is)))]               ;; read file asynchronously
-        (when-not (== c -1)
-          (print (char c))
-          (m/!)                                             ;; check interruption state
-          (recur))))))
+
+(defn print-chars [path]
+  (m/sp
+    ;; open a file and close it before completing
+    (with-open [is (io/input-stream path)]
+      (loop []
+        ;; read file asynchronously
+        (let [c (m/? (m/via m/blk (.read is)))]
+          (when-not (== c -1)
+            (print (char c))
+            ;; check interruption state
+            (m/!)
+            (recur)))))))
+
+(def ps
+  ((print-chars "myfile.txt")
+   (partial prn :success)
+   (partial prn :failure)))
+;; cancellation
+(ps)
+:failure #error{,,,}
 ```
 
 Tip : If the cleanup procedure requires an asynchronous operation, you may not want it to be cancelled along with the
-evaluation context. In this case, use [`compel`](/api/missionary.core/compel.html) to make sure the task completes properly.
+evaluation context. In this case, use [`compel`](/api/missionary.core/compel.html) to make sure the task completes
+properly.
 
 ## Memory consistency (JVM only)
 In standard clojure, the evaluation of an expression is always bound to a single thread. In missionary evaluation
@@ -109,11 +180,16 @@ implications for shared memory access.
 
 Example : the REPL thread starts the process, a cpu pooled thread finishes it.
 ```clojure
-;; completes with false
-(m/sp
-  (identical? (Thread/currentThread)
-    (do (m/? (m/via m/cpu))
-        (Thread/currentThread))))
+(require '[missionary.core :as m])
+
+(def ps
+  ((m/sp
+     (identical? (Thread/currentThread)
+       (do (m/? (m/via m/cpu))
+           (Thread/currentThread))))
+   (partial prn :success)
+   (partial prn :failure)))
+:success false
 ```
 
 For this reason, synchronizers define additional rules :
@@ -125,11 +201,16 @@ These rules basically allow the developer to reason about shared memory as if th
 
 Example : unsynchronized heap access across asynchronous boundaries. Safe.
 ```clojure
-;; completes with 42
-(m/sp
-  (let [arr (long-array 1)]
-    (aset arr 0 6)
-    (m/? (m/via m/cpu
-           (aset arr 0 (inc (aget arr 0)))))
-    (* 6 (aget arr 0))))
+(require '[missionary.core :as m])
+
+(def ps
+  ((m/sp
+     (let [arr (long-array 1)]
+       (aset arr 0 6)
+       (m/? (m/via m/cpu
+              (aset arr 0 (inc (aget arr 0)))))
+       (* 6 (aget arr 0))))
+   (partial prn :success)
+   (partial prn :failure)))
+:success 42
 ```
