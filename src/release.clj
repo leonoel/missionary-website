@@ -55,8 +55,7 @@
          :output :ruby :section :summary :time :mark :audio :video
          {:border 0
           :margin 0
-          :padding 0
-          :font 'inherit}]
+          :padding 0}]
         [:article :aside :details :figcaption :figure :footer :header :hgroup :menu :nav :section
          {:display 'block}]
         [:blockquote :q {:quotes 'none}
