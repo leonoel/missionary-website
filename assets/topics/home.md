@@ -23,7 +23,7 @@ Supervised dataflow programming for clojure and clojurescript.
 
 For full-stack web developers who struggle to build correct and glitch-free applications, Missionary is a reactive programming toolkit based on process supervision, that lets you build massively concurrent, fine-grained reactive systems on both frontend and backend. Unlike promises and go-routines that make it easy to write a broken program, Missionary’s combinators provide the right set of constraints to let you build a fully composable program that is also correct and bug-free.
 
-[Quickstart](/quickstart.html)
+[Quickstart](https://github.com/dustingetz/missionary-quickstart/blob/main/src/quickstart.cljs)
 
 [Documentation](/documentation.html)
 
