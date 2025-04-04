@@ -2,7 +2,6 @@
   (:require [cljs.build.api :as cljs]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [garden.core :as garden]
             [glow.html :as g.html]
             [glow.parse :as g.parse]
             [hiccup.util :as util]
@@ -26,8 +25,10 @@
   (slurp (io/file root path)))
 
 (def app "app.js")
-(def style "style.css")
-(def github-markdown "github-markdown.css")
+
+(def css
+  [{:name "github-markdown" :type :remote :url  "https://raw.githubusercontent.com/sindresorhus/github-markdown-css/gh-pages/github-markdown-light.css"}
+   {:name "style"           :type :local  :path "style.css"}])
 
 (defn write-js! [release {:keys [dev?]}]
   (cljs/build
@@ -40,90 +41,11 @@
         {:optimizations :advanced}))))
 
 (defn write-css! [release {:keys [assets]}]
-  (spit (touch! release github-markdown)
-    (slurp "https://raw.githubusercontent.com/sindresorhus/github-markdown-css/gh-pages/github-markdown-light.css"))
-  (let [{:keys [max-width padding header-font-size footer-font-size link-color
-                highlight-color code-special code-literal code-comment code-string code-symbol]}
-        (edn/read-string (read! assets "style.edn"))]
-    (spit (touch! release style)
-      (garden/css
-        ;; reset http://meyerweb.com/eric/tools/css/reset/
-        [:html :body :div :span :applet :object :iframe :h1 :h2 :h3 :h4 :h5 :h6 :p :blockquote :pre :a :abbr :acronym
-         :address :big :cite :code :del :dfn :em :img :ins :kbd :q :s :samp :small :strike :strong :sub :sup :tt :var
-         :b :u :i :center :dl :dt :dd :ol :ul :li :fieldset :form :label :legend :table :caption :tbody :tfoot :thead
-         :tr :th :td :article :aside :canvas :details :embed :figure :figcaption :footer :header :hgroup :menu :nav
-         :output :ruby :section :summary :time :mark :audio :video
-         {:border 0
-          :margin 0
-          :padding 0}]
-        [:article :aside :details :figcaption :figure :footer :header :hgroup :menu :nav :section
-         {:display 'block}]
-        [:blockquote :q {:quotes 'none}
-         [:&:before :&:after {:content "''"}]
-         [:&:before :&:after {:content 'none}]]
-        [:table {:border-collapse 'collapse
-                 :border-spacing 0}]
-
-        [:html :body {:height "100%"}]
-        [:header :footer
-         {:width "100%"
-          :max-width max-width
-          :margin 'auto
-          :box-sizing 'border-box}
-         [:hr {:margin-bottom 0}]
-         [:a {:color link-color
-              :font-weight 600
-              :text-decoration 'none}
-          [:&:hover {:text-decoration 'underline}]]]
-        [:header {:font-size header-font-size
-                  :padding   (str padding " " padding " 0 " padding)}]
-        [:div.autocomplete {:position 'absolute}]
-        [:div.suggestion {:cursor 'pointer}]
-        [:span.highlight {:background-color highlight-color}]
-        [:body {:display   'flex
-                :flex-flow 'column}]
-        [:main {:overflow 'auto
-                :flex      1
-                :display   'flex
-                :flex-flow 'column}]
-        [:article.markdown-body
-         {:flex 1
-          :box-sizing 'border-box
-          :width "100%"
-          :max-width max-width
-          :margin "0 auto"
-          :padding padding}]
-        [:footer {:font-size footer-font-size
-                  :padding   (str "0 " padding " " padding " " padding)}
-         [:hr {:margin-top 0}]
-         [:ul {:display 'flex
-               :list-style 'none
-               :justify-content 'space-between}]]
-        [:pre
-         [:.exception
-          :.repeat
-          :.conditional
-          :.core-fn
-          :.definition
-          :.special-form
-          :.macro
-          {:color code-special}]
-         [:.number
-          :.boolean
-          :.nil
-          :.keyword
-          {:color code-literal}]
-         [:.comment
-          {:color code-comment}]
-         [:.string
-          :.character
-          :.regex
-          {:color code-string}]
-         [:.variable
-          :.reader-char
-          :.s-exp
-          :.symbol
-          {:color code-symbol}]]))))
+  (run! (fn [{:keys [name type] :as item}]
+          (spit (touch! release (str name ".css"))
+            (case type
+              :remote (slurp (:url item))
+              :local (read! assets (:path item))))) css))
 
 (def hiccup-renderers
   (assoc md.transform/default-hiccup-renderers
@@ -154,12 +76,10 @@
   [:head
    [:meta {:charset "utf-8"}]
    [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
-   [:link {:type "text/css"
-           :href (util/to-uri (str "/" github-markdown))
-           :rel "stylesheet"}]
-   [:link {:type "text/css"
-           :href (util/to-uri (str "/" style))
-           :rel "stylesheet"}]
+   (map (fn [{:keys [name]}]
+          [:link {:type "text/css"
+                  :href (util/to-uri (str "/" name ".css"))
+                  :rel "stylesheet"}]) css)
    [:script {:type  "text/javascript"
              :src   (util/to-uri (str "/" app))
              :async (not dev?)}]])

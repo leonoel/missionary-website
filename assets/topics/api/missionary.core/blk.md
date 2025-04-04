@@ -3,6 +3,7 @@
 ## Usage
 * `blk`
 
+## Description
 An instance of `java.util.concurrent.Executor` optimized for blocking operations.
 
 ## See also

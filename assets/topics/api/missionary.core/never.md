@@ -18,7 +18,7 @@ Example :
 
 ;; cancel the process
 (ps)
-;; :failure #error
+:failure #error{}
 ```
 
 ## Synchronicity

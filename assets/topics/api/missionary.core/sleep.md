@@ -4,18 +4,26 @@
 * `(sleep ms)`
 * `(sleep ms value)`
 
-An [operator](/operators.html) returning a task performing no action. `sleep` process completes with `value` after `ms`
-milliseconds. If `value` is not provided, `sleep` process completes with `nil`. If `sleep` process is cancelled before
-this delay was elapsed, it crashes with an instance of [`Cancelled`](/api/missionary.Cancelled.html).
+`ms` must be a number. `value` can be anything, default is `nil`.
 
-Example : sleep for 1 second
+## Description
+An [operator](/operators.html) returning a task performing no action. `sleep` process completes with `value` after `ms`
+milliseconds. If `sleep` process is cancelled before this delay was elapsed, it crashes with an instance of
+[`Cancelled`](/api/missionary.Cancelled.html).
+
+## Examples
+Sleep for 1 second :
 ```clojure
 (require '[missionary.core :as m])
 
 (def sleep-for-1-sec (m/sleep 1000 :foo))
 
-(m/? sleep-for-1-sec)
-:= :foo
+(def ps
+  (sleep-for-1-sec
+    (partial prn :success)
+    (partial prn :failure)))
+;; after 1s
+:success :foo
 ```
 
 ## Synchronicity

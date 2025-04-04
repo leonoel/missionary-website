@@ -11,10 +11,10 @@
  "ports"                          {:template :topic}
  "continuous-time"                {:template :topic}
 
- "api/missionary.core/!"          {:template :topic}
- "api/missionary.core/_"          {:template :topic}
- "api/missionary.core/_<"         {:template :topic}
- "api/missionary.core/_>"         {:template :topic}
+ "api/missionary.core/park"       {:template :topic}
+ "api/missionary.core/check"      {:template :topic}
+ "api/missionary.core/switch"     {:template :topic}
+ "api/missionary.core/flatten"    {:template :topic}
  "api/missionary.core/absolve"    {:template :topic}
  "api/missionary.core/amb"        {:template :topic}
  "api/missionary.core/amb="       {:template :topic}

@@ -1,0 +1,124 @@
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+  display: block;
+}
+
+blockquote, q {
+  quotes: none;
+}
+
+blockquote:before, blockquote:after, q:before, q:after {
+  content: '';
+}
+
+blockquote:before, blockquote:after, q:before, q:after {
+  content: none;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+header, footer {
+  width: 100%;
+  max-width: 980px;
+  margin: auto;
+  box-sizing: border-box;
+}
+
+header hr, footer hr {
+  margin-bottom: 0;
+}
+
+header a, footer a {
+  color: #0969da;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+header a:hover, footer a:hover {
+  text-decoration: underline;
+}
+
+header {
+  font-size: 1.2rem;
+  padding: 10px 10px 0 10px;
+}
+
+div.autocomplete {
+  position: absolute;
+}
+
+div.suggestion {
+  cursor: pointer;
+}
+
+span.highlight {
+  background-color: #4C5729CC;
+}
+
+body {
+  display: flex;
+  flex-flow: column;
+}
+
+main {
+  overflow: auto;
+  flex: 1;
+  display: flex;
+  flex-flow: column;
+}
+
+article.markdown-body {
+  flex: 1;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+footer {
+  font-size: 1.2rem;
+  padding: 0 10px 10px 10px;
+}
+
+footer hr {
+  margin-top: 0;
+}
+
+footer ul {
+  display: flex;
+  list-style: none;
+  justify-content: space-between;
+}
+
+pre .exception, pre .repeat, pre .conditional, pre .core-fn, pre .definition, pre .special-form, pre .macro {
+  color: #cf222e;
+}
+
+pre .number, pre .boolean, pre .nil, pre .keyword {
+  color: #0550ae;
+}
+
+pre .comment {
+  color: #6e7781;
+}
+
+pre .string, pre .character, pre .regex {
+  color: #0a3069;
+}
+
+pre .variable, pre .reader-char, pre .s-exp, pre .symbol {
+  color: #1F2328;
+}

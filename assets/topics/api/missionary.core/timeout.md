@@ -4,11 +4,15 @@
 * `(timeout task ms)`
 * `(timeout task ms value)`
 
-An [operator](/operators.html) returning a task spawning given `task`. If `task` process terminates within `ms`
-milliseconds, `timeout` process terminates with this result. Otherwise, `task` process is cancelled and `timeout`
-process completes with `value`. If `value` is not provided, `timeout` process completes with `nil`.
+`ms` must be a number. `value` can be anything, default is `nil`.
 
-Example : ensure a task terminates within 500ms
+## Description
+A function [operator](/operators.html) returning a temporally bounded view of given `task`. If `task` process
+terminates within `ms` milliseconds, `timeout` process terminates with this result. Otherwise, `task` process is
+cancelled and `timeout` process completes with `value`.
+
+## Examples
+Ensure a task terminates within 500ms :
 ```clojure
 (require '[missionary.core :as m])
 

@@ -3,35 +3,35 @@
 ## Usage
 * `(compel task)`
 
-A function [operator](/operators.html) returning a task spawning given `task`. When `task` process terminates,
-`compel` process terminates with this result. Cancelling a `compel` process has no effect.
+## Description
+A function [operator](/operators.html) disabling `task` cancellation. When `task` process terminates, `compel` process
+terminates with this result. Cancelling a `compel` process has no effect.
 
-Example : ensure an asynchronous effect is performed to completion before terminating
+## Examples
+Ensure an asynchronous effect is performed to completion before terminating
 ```clojure
 (require '[missionary.core :as m])
 
 ;; a task emulating a mandatory action
-(def cleanup (m/sleep 100))
+(def cleanup
+  (m/sp
+    (m/? (m/sleep 100))
+    (prn :cleaned-up)))
 
 ;; run cleanup in a finally block
 ;; compel ensures it won't be cancelled
 (defn with-cleanup [task]
   (m/sp (try (m/? task)
              (finally
-               (m/? (m/compel cleanup))
-               (prn :cleaned-up)))))
+               (m/? (m/compel cleanup))))))
 
-;; perform the task
-(def ps
-  ((with-cleanup m/never)
-   (partial prn :success)
-   (partial prn :failure)))
+(def main (with-cleanup m/never))
 
-;; cancel the process
+(def ps (main #(prn :success %) #(prn :failure %)))
 (ps)
 ;; (after 100ms)
-;; :cleaned-up
-;; :failure #error
+:cleaned-up
+:failure #error{}
 ```
 
 ## Synchronicity

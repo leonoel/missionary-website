@@ -3,9 +3,9 @@
 ## Usage
 * `(sp & body)`
 
-A macro [operator](/operators.html) returning a task evaluating `body`, in an implicit `do`, in a context supporting
-asynchronous parking and interruption checking. `sp` process completes with the evaluation result, or crashes if an
-exception is thrown. Cancelling `sp` process interrupts the evaluation context.
+A macro [operator](/operators.html) returning a task evaluating `body` in an implicit `do`, in a context supporting
+interruption check and asynchronous park. `sp` process completes with the evaluation result, or crashes if an exception
+is thrown. Cancelling `sp` process interrupts the evaluation context.
 
 Example : a task performing a synchronous effect.
 ```clojure
@@ -48,6 +48,6 @@ Example : recover from a task failure.
 order, if it exists. Otherwise, it is synchronous with `sp` spawn.
 
 ## See also
-* [synchronizers](/synchronizers.html)
+* [Synchronizers](/synchronizers.html)
 * [`!`](/api/missionary.core/!.html)
 * [`?`](/api/missionary.core/?.html)

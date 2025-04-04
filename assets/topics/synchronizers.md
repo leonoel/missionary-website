@@ -5,16 +5,16 @@ expressive power of imperative programming, while keeping precise control over b
 space.
 
 Missionary has 4 primitive synchronizers :
-* [`!`](/api/missionary.core/!.html) - interruption check
-* [`?`](/api/missionary.core/_.html) - park on asynchronous result
-* [`?<`](/api/missionary.core/_<.html) - switch from continuous states
-* [`?>`](/api/missionary.core/_>.html) - concat from discrete events
+* [`!`](/api/missionary.core/check.html) - interruption check
+* [`?`](/api/missionary.core/park.html) - park on asynchronous result
+* [`?<`](/api/missionary.core/switch.html) - switch from successive states
+* [`?>`](/api/missionary.core/flatten.html) - flatten nested events streams
 
 Macros can be used to derive synchronizers from the primitive ones. A derived synchronizer inherits the properties of
 the synchronizer it desugars to. Missionary provides the following derived synchronizers :
-* [`holding`](/api/missionary.core/holding.html) - sugar over [`?`](/api/missionary.core/_.html)
-* [`amb`](/api/missionary.core/amb.html) - sugar over [`?>`](/api/missionary.core/_>.html)
-* [`amb=`](/api/missionary.core/amb%3D.html) - sugar over [`?>`](/api/missionary.core/_>.html)
+* [`holding`](/api/missionary.core/holding.html) - sugar over [`?`](/api/missionary.core/park.html)
+* [`amb`](/api/missionary.core/amb.html) - sugar over [`?>`](/api/missionary.core/flatten.html)
+* [`amb=`](/api/missionary.core/amb%3D.html) - sugar over [`?>`](/api/missionary.core/flatten.html)
 
 ## Evaluation contexts
 A synchronizer interacts with the current evaluation context. The host platform provides a default evaluation context,
@@ -26,12 +26,12 @@ and missionary coroutines provide additional evaluation contexts :
 Each synchronizer has the same behavior in every evaluation context supporting it, but each evaluation context only
 supports its own subset of synchronizers, according to this compatibility matrix :
 
-|                                      | Single-threaded (JS) | Multi-threaded (JVM) | [`sp`](/api/missionary.core/sp.html) | [`cp`](/api/missionary.core/cp.html) | [`ap`](/api/missionary.core/ap.html) |
-|--------------------------------------|----------------------|----------------------|--------------------------------------|--------------------------------------|--------------------------------------|
-| [`!`](/api/missionary.core/!.html)   |                      | ✔️                    | ✔️                                    | ✔️                                    | ✔️                                    |
-| [`?`](/api/missionary.core/_.html)   |                      | ✔️                    | ✔️                                    |                                      | ✔️                                    |
-| [`?<`](/api/missionary.core/_<.html) |                      |                      |                                      | ✔️                                    | ✔️                                    |
-| [`?>`](/api/missionary.core/_>.html) |                      |                      |                                      |                                      | ✔️                                    |
+|                                           | Single-threaded (JS) | Multi-threaded (JVM) | [`sp`](/api/missionary.core/sp.html) | [`cp`](/api/missionary.core/cp.html) | [`ap`](/api/missionary.core/ap.html) |
+|-------------------------------------------|----------------------|----------------------|--------------------------------------|--------------------------------------|--------------------------------------|
+| [`!`](/api/missionary.core/check.html)    |                      | ✔️                    | ✔️                                    | ✔️                                    | ✔️                                    |
+| [`?`](/api/missionary.core/park.html)     |                      | ✔️                    | ✔️                                    |                                      | ✔️                                    |
+| [`?<`](/api/missionary.core/switch.html)  |                      |                      |                                      | ✔️                                    | ✔️                                    |
+| [`?>`](/api/missionary.core/flatten.html) |                      |                      |                                      |                                      | ✔️                                    |
 
 ## Coroutines
 The association of a coroutine context with its subset of synchronizers defines an extension of the clojure syntax. The
@@ -42,7 +42,7 @@ extensions is to augment the evaluation rules with extra capabilities.
 Missionary coroutines are *stackless* : synchronizers within nested function calls are not considered part of the
 coroutine execution context.
 
-Example : calling [`?`](/api/missionary.core/_.html) from [`sp`](/api/missionary.core/sp.html) via a nested function
+Example : calling [`?`](/api/missionary.core/park.html) from [`sp`](/api/missionary.core/sp.html) via a nested function
 call. Don't do this.
 ```clojure
 (require '[missionary.core :as m])
@@ -59,16 +59,17 @@ The common workarounds to this limitation are :
 * turn `my-sleep` into a macro. The macro will expand in the `sp` body, making `?` a direct call.
 
 ## Parking & Forking
-[`?`](/api/missionary.core/_.html) is the parking synchronizer. When called, evaluation is suspended and the task
+[`?`](/api/missionary.core/park.html) is the parking synchronizer. When called, evaluation is suspended and the task
 passed as argument is run. Evaluation is resumed when the task process terminates, the result is returned from the
 synchronizer call.
 
-[`?<`](/api/missionary.core/_<.html) and [`?>`](/api/missionary.core/_>.html) are the forking synchronizers. Forking is
-a generalization of parking, the evaluation is also suspended, but it can resume many times. The synchronizer takes a
-flow instead of task and returns a result for each transfer. These two operators have different behavior when a new
-input is available - the former invalidates the current evaluation, the latter propagates backpressure.
+[`?<`](/api/missionary.core/switch.html) and [`?>`](/api/missionary.core/flatten.html) are the forking synchronizers.
+Forking is a generalization of parking, the evaluation is also suspended, but it can resume many times. The synchronizer
+takes a flow instead of task and returns a result for each transfer. These two operators have different behavior when a
+new input is available - the former invalidates the current evaluation, the latter propagates backpressure.
 
-Example : backpressure propagation with [`?>`](/api/missionary.core/_>.html) and [`?`](/api/missionary.core/_.html).
+Example : backpressure propagation with [`?>`](/api/missionary.core/flatten.html) and
+[`?`](/api/missionary.core/park.html).
 ```clojure
 (require '[missionary.core :as m])
 
@@ -101,7 +102,7 @@ Example : backpressure propagation with [`?>`](/api/missionary.core/_>.html) and
 :failure #error{,,,}
 ```
 
-Example : switch from indefinite evaluations with [`?<`](/api/missionary.core/_<.html).
+Example : switch from indefinite evaluations with [`?<`](/api/missionary.core/switch.html).
 ```clojure
 (require '[missionary.core :as m])
 
@@ -137,7 +138,7 @@ instead inform the program to promptly terminate.
 
 An interrupted context cancels all of its parking and forking processes, which means the default behavior is to delegate
 interruption handling to its children. Alternatively, the program can periodically check context interruption state
-using [`!`](/api/missionary.core/!.html).
+using [`!`](/api/missionary.core/check.html).
 
 A coroutine context becomes interrupted when its process gets cancelled. Unlike JVM threads, this state cannot be
 changed by the coroutine body.

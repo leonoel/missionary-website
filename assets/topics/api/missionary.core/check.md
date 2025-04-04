@@ -23,15 +23,16 @@ Example : explicit interruption check when an asynchronous operation doesn't sup
 
 ;; without interruption check, the call would never return
 ;; because timeout waits for repeat-fetch termination
-(m/? (m/timeout repeat-fetch 500 :timeout))
-:= :timeout
+(def main (m/timeout repeat-fetch 500 :timeout))
+
+(def ps (main #(prn :success %) #(prn :failure %)))
+:success :timeout
 ```
 
 ## Synchronicity
-* interruption checking return is synchronous with the call.
+* interruption check is a synchronous effect.
 
 ## See also
-* [synchronizers](/synchronizers.html)
 * [`sp`](/api/missionary.core/sp.html)
 * [`cp`](/api/missionary.core/cp.html)
 * [`ap`](/api/missionary.core/ap.html)

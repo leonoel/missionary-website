@@ -3,6 +3,7 @@
 ## Usage
 * `cpu`
 
+## Description
 An instance of `java.util.concurrent.Executor` optimized for non-blocking operations.
 
 ## See also
