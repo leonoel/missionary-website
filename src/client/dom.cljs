@@ -1,6 +1,5 @@
 (ns client.dom
-  (:require [hyperfiddle.incseq :as i]
-            [missionary.core :as m]
+  (:require [missionary.core :as m]
             [goog.events :as e]))
 
 (defn element [t]
@@ -27,37 +26,6 @@
     (fn [!]
       (e/listen e t !)
       #(e/unlisten e t !))))
-
-(defn mount-items [element {:keys [grow shrink degree permutation change]}]
-  (let [children (.-childNodes element)
-        move (i/inverse permutation)
-        size-before (- degree grow)
-        size-after (- degree shrink)]
-    (loop [i size-before
-           c change]
-      (if (== i degree)
-        (reduce-kv
-          (fn [_ i e]
-            (.replaceChild element e
-              (.item children (move i i))))
-          nil c)
-        (let [j (move i i)]
-          (.appendChild element (c j))
-          (recur (inc i) (dissoc c j)))))
-    (loop [p permutation
-           i degree]
-      (if (== i size-after)
-        (loop [p p]
-          (when-not (= p {})
-            (let [[i j] (first p)]
-              (.insertBefore element (.item children j)
-                (.item children (if (< j i) (inc i) i)))
-              (recur (i/compose p (i/rotation i j))))))
-        (let [i (dec i)
-              j (p i i)]
-          (.removeChild element (.item children j))
-          (recur (i/compose p (i/rotation i j)) i))))
-    element))
 
 (defn clock [d]
   (m/ap

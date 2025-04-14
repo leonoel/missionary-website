@@ -3,7 +3,6 @@
   (:require [client.dom :as d]
             [client.net :as n]
             [clojure.string :as str]
-            [hyperfiddle.incseq :as i]
             [missionary.core :as m]
             [goog.dom.classlist :as gdc])
   (:import (goog.dom TagName NodeType)
@@ -44,10 +43,7 @@
                            (d/get-text! (.item (.-childNodes title-child) 0)))]
        (let [offset (inc (or (str/index-of reference "/") (.lastIndexOf reference ".")))
              suffix (subs (str/lower-case reference) offset)]
-         (.replaceChildren title-child)
-         (.appendChild title-child before-highlight)
-         (.appendChild title-child highlight)
-         (.appendChild title-child after-highlight)
+         (.replaceChildren title-child before-highlight highlight after-highlight)
          (m/latest
            (fn [needle]
              (if-some [index (when-not (= "" needle) (str/index-of suffix needle))]
@@ -63,6 +59,10 @@
                    0)))
            <needle))
        (m/cp 0))]))
+
+(defn replace-children [parent children]
+  (.apply (.-replaceChildren (.-prototype js/Element))
+    parent (into-array children)) parent)
 
 (defn autocomplete [path->page input]
   (let [container (d/element "div")
@@ -82,8 +82,7 @@
             (eduction
               (filter (comp pos? val))
               (map key)))))
-      (i/diff-by identity)
-      (m/reduce d/mount-items container))))
+      (m/reduce replace-children container))))
 
 ((m/sp (m/? (m/? (m/join autocomplete get-articles (d/wait-for #(.getElementById js/document "search"))))))
  (.-log js/console) (.-error js/console))
