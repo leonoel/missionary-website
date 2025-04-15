@@ -3,7 +3,6 @@
            missionary/missionary          {:mvn/version "b.32"}
            io.github.nextjournal/markdown {:mvn/version "0.5.144"}
            venantius/glow                 {:mvn/version "0.1.6"}
-           garden/garden                  {:mvn/version "1.3.10"}
            hiccup/hiccup                  {:mvn/version "2.0.0-RC1"}}
  :aliases {:dev     {:extra-paths ["dev"]}
            :release {:main-opts ["-m" "release"]}}}
