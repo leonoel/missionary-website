@@ -27,7 +27,7 @@
 (def app "app.js")
 
 (def css
-  [{:name "github-markdown" :type :remote :url  "https://raw.githubusercontent.com/sindresorhus/github-markdown-css/gh-pages/github-markdown-light.css"}
+  [#_ {:name "github-markdown" :type :remote :url  "https://raw.githubusercontent.com/sindresorhus/github-markdown-css/gh-pages/github-markdown-light.css"}
    {:name "style"           :type :local  :path "style.css"}])
 
 (defn write-js! [release {:keys [dev?]}]
