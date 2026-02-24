@@ -56,12 +56,12 @@ Note : in the missionary API, [publisher](/publishers.html) and [port](/ports.ht
 effects.
 
 ## Computation costs
-Missionary synchronicity semantics relies on detection of reentrant synchronous effects. For this reason, user code
+Missionary synchronous semantics relies on detection of reentrant synchronous effects. For this reason, user code
 evaluation is never implicitly transferred to another thread, and the system will never make the decision to run any
 parts of the program concurrently if not explicitly told to do so. This mechanism makes the pervasive assumption that
 the computation cost of user-provided code is negligible, and the burden of checking is left to the programmer.
 
-Any expensive computation is asynchronous by definition, and should be bound to a `java.util.concurrent.Executor` using
+Any expensive computation is asynchronous by definition, and should be given to a `java.util.concurrent.Executor` using
 [`via`](/api/missionary.core/via.html). This is especially true for blocking operations, but can also apply to
 CPU-intensive operations. Computation cost is an engineering concern that is not directly related to thread blocking.
 In practice, some blocking operations can be considered inexpensive, e.g. acquiring a mutex under low contention. A
